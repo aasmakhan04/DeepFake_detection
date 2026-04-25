@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}DeepShield - Home{% endblock %}
+
+{% block extra_head %}
+<style>
+  .hero { text-align: center; margin-bottom: 50px; min-height: 40vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+  .hero h1 { font-size: 48px; margin-bottom: 20px; color: #00e6e6; min-height: 60px; }
+  .hero p { font-size: 18px; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto 30px auto; line-height: 1.6; }
+  .btn-large { background: #22c55e; color: white; padding: 15px 35px; font-size: 18px; border-radius: 30px; text-decoration: none; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); }
+  .btn-large:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6); }
+
+  .features { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 40px; }
+  .feature-card { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 15px; width: 280px; text-align: center; border: 1px solid rgba(255,255,255,0.1); transition: all 0.4s ease; opacity: 0; transform: translateY(30px); }
+  .feature-card.visible { opacity: 1; transform: translateY(0); }
+  .feature-card:hover { transform: translateY(-10px) scale(1.02); background: rgba(255,255,255,0.08); border-color: #22c55e; }
+  .feature-card h3 { margin: 15px 0; color: #22c55e; transition: color 0.3s; }
+  .feature-icon { font-size: 45px; transition: transform 0.3s; }
+  .feature-card:hover .feature-icon { transform: scale(1.2) rotate(5deg); }
+
+  /* Blinking cursor for typing effect */
+  .cursor { display: inline-block; width: 3px; background-color: #00e6e6; animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <h1><span id="typewriter"></span><span class="cursor">&nbsp;</span></h1>
+  <p>Protect yourself from deepfakes and manipulated images. Our advanced ensemble neural network architecture analyzes pixels at a microscopic level to verify image authenticity.</p>
+  {% if not session.get('user') %}
+    <a href="/register" class="btn-large">Get Started Now</a>
+  {% else %}
+    <a href="/dashboard" class="btn-large">Go to Dashboard</a>
+  {% endif %}
+</div>
+
+<div class="features" id="features-container">
+  <div class="feature-card">
+    <div class="feature-icon">📤</div>
+    <h3>1. Upload</h3>
+    <p>Drag and drop single or multiple images directly into our secure analysis engine.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">⚙️</div>
+    <h3>2. Analyze</h3>
+    <p>Select from state-of-the-art models like ResNet or EfficientNet to process the image data.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">📊</div>
+    <h3>3. Verify</h3>
+    <p>View detailed confidence charts breaking down the probability of the image being real, AI-generated, or edited.</p>
+  </div>
+</div>
+
+<script>
+  // Typing Effect
+  const text = "Detect AI-Generated Media Instantly.";
+  let i = 0;
+  function typeWriter() {
+    if (i < text.length) {
+      document.getElementById("typewriter").innerHTML += text.charAt(i);
+      i++;
+      setTimeout(typeWriter, 50);
+    }
+  }
+  window.onload = typeWriter;
+
+  // Scroll Reveal Animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, index * 150); // Stagger the animation
+      }
+    });
+  });
+
+  document.querySelectorAll('.feature-card').forEach((card) => {
+    observer.observe(card);
+  });
+</script>
+{% endblock %}

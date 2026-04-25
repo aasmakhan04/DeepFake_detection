@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VisionForge — AI Image Forensics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <!-- <link rel="stylesheet" href="styles.css" /> -->
+
+  <style>
+/* ──────────────────────────────────────────────────────────────
+   DeepShield — AI Forensics Dashboard
+   Dark luxury aesthetic · Syne + DM Sans
+   ────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-base:       #080d17;
+  --bg-surface:    #0d1526;
+  --bg-card:       #111d35;
+  --bg-card-hover: #162240;
+  --border:        rgba(99, 130, 200, 0.12);
+  --border-bright: rgba(129, 140, 248, 0.3);
+  --text-primary:  #e8eef8;
+  --text-secondary:#8899bb;
+  --text-muted:    #4a5a7a;
+  --accent-violet: #818cf8;
+  --accent-sky:    #38bdf8;
+  --accent-green:  #34d399;
+  --accent-amber:  #fbbf24;
+  --accent-rose:   #f472b6;
+  --real-color:    #34d399;
+  --gen-color:     #f87171;
+  --edit-color:    #fbbf24;
+  --radius-sm:     8px;
+  --radius-md:     14px;
+  --radius-lg:     20px;
+  --radius-xl:     28px;
+  --shadow-card:   0 8px 32px rgba(0,0,20,0.5);
+  --shadow-glow:   0 0 40px rgba(129,140,248,0.15);
+  --font-display:  'Syne', sans-serif;
+  --font-body:     'DM Sans', sans-serif;
+  --transition:    0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Base ── */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Subtle noise overlay */
+.noise-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+/* Radial glow BG */
+body::before {
+  content: '';
+  position: fixed;
+  top: -20vh; left: 50%; transform: translateX(-50%);
+  width: 80vw; height: 60vh;
+  background: radial-gradient(ellipse at center,
+    rgba(99,102,241,0.08) 0%,
+    rgba(56,189,248,0.04) 50%,
+    transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── Navbar ── */
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,13,23,0.85);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 1280px; margin: 0 auto;
+  padding: 0 2rem;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+}
+
+.nav-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.brand-icon { width: 32px; height: 32px; display: flex; align-items: center; }
+.brand-icon svg { width: 28px; height: 28px; }
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem; font-weight: 800;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #818cf8, #38bdf8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.brand-tag {
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.15em;
+  color: var(--accent-violet);
+  background: rgba(129,140,248,0.1);
+  border: 1px solid rgba(129,140,248,0.2);
+  padding: 2px 6px; border-radius: 4px;
+}
+
+.nav-center { display: flex; align-items: center; }
+.selector-label {
+  font-size: 0.7rem; font-weight: 500; letter-spacing: 0.1em;
+  color: var(--text-muted); text-transform: uppercase; margin-right: 8px;
+}
+.custom-select-wrap { position: relative; }
+.custom-select {
+  appearance: none; cursor: pointer;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.875rem; font-weight: 500;
+  padding: 8px 36px 8px 14px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition), background var(--transition);
+}
+.custom-select:hover, .custom-select:focus {
+  border-color: var(--border-bright);
+  background: var(--bg-card-hover);
+}
+.select-arrow {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  pointer-events: none;
+}
+.select-arrow svg { width: 12px; height: 8px; }
+
+.status-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 100px;
+  font-size: 0.8rem; font-weight: 500; color: var(--text-secondary);
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 8px var(--accent-green);
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+.status-pill.loading .status-dot { background: var(--accent-amber); box-shadow: 0 0 8px var(--accent-amber); }
+.status-pill.error .status-dot { background: var(--gen-color); box-shadow: 0 0 8px var(--gen-color); }
+
+/* ── Hero ── */
+.hero-section {
+  text-align: center; padding: 4.5rem 2rem 2.5rem;
+  position: relative; z-index: 1;
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800; line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8 0%, #38bdf8 50%, #34d399 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  margin-top: 1rem; color: var(--text-secondary);
+  font-size: 1rem; font-weight: 300; letter-spacing: 0.02em;
+}
+
+/* ── Main Content ── */
+.main-content {
+  max-width: 1280px; margin: 0 auto;
+  padding: 0 2rem 4rem;
+  position: relative; z-index: 1;
+}
+
+/* ── Upload Section ── */
+.upload-section { margin-bottom: 2rem; }
+
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), transform var(--transition);
+  position: relative;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent-violet);
+  background: rgba(129,140,248,0.05);
+  transform: scale(1.005);
+}
+.drop-zone.drag-over { box-shadow: var(--shadow-glow); }
+
+.drop-inner { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.drop-icon svg { width: 56px; height: 56px; }
+.drop-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem; font-weight: 700; color: var(--text-primary);
+}
+.drop-sub { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
+.drop-link {
+  color: var(--accent-violet); text-decoration: underline;
+  text-underline-offset: 3px; cursor: pointer; font-weight: 500;
+}
+.drop-hint { color: var(--text-muted); font-size: 0.78rem; margin-top: 4px; }
+
+/* ── Preview Grid ── */
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem; margin-top: 1.5rem;
+}
+.preview-item {
+  position: relative; border-radius: var(--radius-md);
+  overflow: hidden; border: 1px solid var(--border);
+  background: var(--bg-card);
+  aspect-ratio: 1;
+  animation: fadeIn 0.3s ease;
+}
+.preview-item img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block;
+}
+.preview-remove {
+  position: absolute; top: 6px; right: 6px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(0,0,0,0.7); border: none;
+  color: white; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--transition), transform var(--transition);
+  line-height: 1;
+}
+.preview-remove:hover { background: var(--gen-color); transform: scale(1.1); }
+.preview-name {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  padding: 20px 8px 6px;
+  font-size: 0.7rem; color: #cbd5e1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Analyze Button ── */
+.analyze-wrap { margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center; }
+.btn-analyze {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 32px; border-radius: 100px;
+  background: linear-gradient(135deg, #6366f1, #38bdf8);
+  border: none; color: white; cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.95rem; font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+  transition: transform var(--transition), box-shadow var(--transition), opacity var(--transition);
+}
+.btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.5); }
+.btn-analyze:active { transform: translateY(0); }
+.btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-icon svg { width: 18px; height: 18px; }
+.btn-clear {
+  padding: 13px 24px; border-radius: 100px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-secondary); cursor: pointer;
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 500;
+  transition: border-color var(--transition), color var(--transition);
+}
+.btn-clear:hover { border-color: var(--border-bright); color: var(--text-primary); }
+
+/* ── Loading ── */
+.loading-overlay {
+  display: flex; align-items: center; justify-content: center;
+  padding: 3rem;
+}
+.loader-card {
+  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: 3rem 4rem;
+  box-shadow: var(--shadow-card);
+}
+.spinner-ring {
+  width: 56px; height: 56px; border-radius: 50%;
+  border: 3px solid var(--bg-surface);
+  border-top-color: var(--accent-violet);
+  border-right-color: var(--accent-sky);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text {
+  font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+}
+.loader-sub { color: var(--text-muted); font-size: 0.85rem; }
+.dots::after {
+  content: ''; animation: dotdot 1.5s infinite;
+}
+@keyframes dotdot {
+  0%   { content: '.'; }
+  33%  { content: '..'; }
+  66%  { content: '...'; }
+  100% { content: '.'; }
+}
+
+/* ── Section Headers ── */
+.section-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.section-title {
+  font-family: var(--font-display); font-size: 1.25rem; font-weight: 700;
+  color: var(--text-primary);
+}
+.section-badge, .result-count {
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
+  padding: 3px 10px; border-radius: 100px;
+}
+.section-badge {
+  background: rgba(129,140,248,0.12);
+  border: 1px solid rgba(129,140,248,0.25);
+  color: var(--accent-violet);
+}
+.result-count {
+  background: rgba(56,189,248,0.1);
+  border: 1px solid rgba(56,189,248,0.2);
+  color: var(--accent-sky);
+}
+
+/* ── Metrics ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+  position: relative; overflow: hidden;
+  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+  animation: slideUp 0.4s ease both;
+}
+.metric-card:hover { border-color: var(--border-bright); transform: translateY(-3px); box-shadow: var(--shadow-card); }
+.metric-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);
+  pointer-events: none;
+}
+.metric-icon {
+  width: 42px; height: 42px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.metric-icon svg { width: 20px; height: 20px; }
+.accuracy-icon  { background: rgba(129,140,248,0.15); color: var(--accent-violet); }
+.precision-icon { background: rgba(244,114,182,0.15); color: var(--accent-rose); }
+.recall-icon    { background: rgba(52,211,153,0.15);  color: var(--accent-green); }
+.f1-icon        { background: rgba(167,139,250,0.15); color: #a78bfa; }
+
+.metric-info { flex: 1; }
+.metric-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
+.metric-value { font-family: var(--font-display); font-size: 1.65rem; font-weight: 800; margin-top: 2px; }
+.metric-arc { width: 60px; height: 60px; flex-shrink: 0; }
+.arc-svg { width: 60px; height: 60px; }
+.arc-progress { transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ── Table ── */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.results-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--bg-card);
+  font-size: 0.875rem;
+}
+.results-table thead tr { border-bottom: 1px solid var(--border); }
+.results-table th {
+  padding: 14px 16px; text-align: left;
+  font-family: var(--font-display); font-size: 0.72rem;
+  font-weight: 700; letter-spacing: 0.08em;
+  color: var(--text-muted); text-transform: uppercase;
+  background: rgba(13,21,38,0.6);
+  white-space: nowrap;
+}
+.results-table td {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  color: var(--text-primary); vertical-align: middle;
+}
+.results-table tbody tr { transition: background var(--transition); }
+.results-table tbody tr:hover { background: rgba(129,140,248,0.04); }
+.results-table tbody tr:last-child td { border-bottom: none; }
+
+.table-thumb {
+  width: 52px; height: 52px; border-radius: var(--radius-sm);
+  object-fit: cover; display: block;
+  border: 1px solid var(--border);
+}
+.filename-cell { max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-secondary); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+}
+.badge-real { background: rgba(52,211,153,0.15); color: var(--real-color); border: 1px solid rgba(52,211,153,0.25); }
+.badge-gen  { background: rgba(248,113,113,0.15); color: var(--gen-color);  border: 1px solid rgba(248,113,113,0.25); }
+.badge-edit { background: rgba(251,191,36,0.15);  color: var(--edit-color); border: 1px solid rgba(251,191,36,0.25); }
+.badge-err  { background: rgba(148,163,184,0.1);  color: var(--text-muted); border: 1px solid var(--border); }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.conf-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 100px; }
+.conf-bar-bg { flex: 1; height: 5px; border-radius: 99px; background: var(--bg-surface); overflow: hidden; }
+.conf-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+.conf-val { font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+
+.prob-cell { font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* ── Charts ── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--transition);
+}
+.chart-card:hover { border-color: var(--border-bright); }
+.chart-card-sm { }
+.chart-header { margin-bottom: 1.25rem; }
+.chart-title { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; }
+.chart-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; }
+.chart-body { position: relative; }
+.chart-donut-body { display: flex; align-items: center; justify-content: center; max-height: 220px; }
+
+/* ── Analyze Again ── */
+.analyze-again-wrap { margin-top: 2.5rem; display: flex; justify-content: center; }
+.btn-again {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 28px; border-radius: 100px;
+  background: transparent; border: 1px solid var(--border-bright);
+  color: var(--accent-violet); cursor: pointer;
+  font-family: var(--font-body); font-size: 0.9rem; font-weight: 500;
+  transition: background var(--transition), border-color var(--transition), transform var(--transition);
+}
+.btn-again:hover { background: rgba(129,140,248,0.08); transform: translateY(-2px); }
+
+/* ── Footer ── */
+.footer {
+  text-align: center; padding: 2rem;
+  color: var(--text-muted); font-size: 0.78rem;
+  border-top: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+
+/* ── Animations ── */
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.results-section { animation: slideUp 0.5s ease; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .nav-inner { padding: 0 1rem; gap: 1rem; }
+  .nav-center { display: none; }
+  .hero-section { padding: 3rem 1rem 1.5rem; }
+  .main-content { padding: 0 1rem 3rem; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .metric-arc { display: none; }
+  .preview-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
+@media (max-width: 480px) {
+  .metrics-grid { grid-template-columns: 1fr; }
+  .brand-tag { display: none; }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; hesight: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-violet); }
+
+  </style>
+</head>
+<body>
+
+  <!-- ───── Noise Overlay ───── -->
+  <div class="noise-overlay"></div>
+
+  <!-- ───── NAVBAR ───── -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14 2L26 8V20L14 26L2 20V8L14 2Z" stroke="url(#grad1)" stroke-width="2" fill="none"/>
+            <path d="M14 8L20 11V17L14 20L8 17V11L14 8Z" fill="url(#grad1)" opacity="0.6"/>
+            <circle cx="14" cy="14" r="2.5" fill="white"/>
+            <defs>
+              <linearGradient id="grad1" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#818cf8"/>
+                <stop offset="100%" stop-color="#38bdf8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="brand-name">VisionForge</span>
+        <span class="brand-tag">FORENSICS</span>
+      </div>
+
+      <div class="nav-center">
+        <div class="model-selector-wrap">
+          <label class="selector-label">Model</label>
+          <div class="custom-select-wrap">
+            <select id="modelSelect" class="custom-select">
+              <option value="EfficientNet">EfficientNet B0</option>
+              <option value="ResNet">ResNet 50</option>
+              <option value="Xception">Xception</option>
+              <option value="Ensemble">⚡ Ensemble</option>
+            </select>
+            <span class="select-arrow">
+              <svg viewBox="0 0 12 8" fill="none"><path d="M1 1L6 6L11 1" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <div class="status-pill" id="statusPill">
+          <span class="status-dot"></span>
+          <span id="statusText">Ready</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ───── HERO ───── -->
+  <div class="hero-section">
+    <h1 class="hero-title">
+      Detect <span class="gradient-text">AI-Generated</span><br/>Images Instantly
+    </h1>
+    <p class="hero-sub">Upload up to 5 images · Select a model · Get forensic-grade analysis</p>
+  </div>
+
+  <!-- ───── MAIN CONTENT ───── -->
+  <main class="main-content">
+
+    <!-- Upload Zone -->
+    <section class="upload-section" id="uploadSection">
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-inner">
+          <div class="drop-icon">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 32V16M24 16L17 23M24 16L31 23" stroke="url(#uploadGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 34C5.79 34 4 32.21 4 30C4 27.79 5.79 26 8 26C8.34 26 8.67 26.04 8.99 26.12C9.59 22.58 12.69 20 16.4 20C17.37 20 18.3 20.2 19.15 20.55C20.62 17.29 23.88 15 27.69 15C33.35 15 37.93 19.48 38 25.14C40.3 25.71 42 27.77 42 30.2C42 33.01 39.87 35.29 37.15 35.5" stroke="url(#uploadGrad)" stroke-width="2.5" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="uploadGrad" x1="4" y1="15" x2="42" y2="35" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#818cf8"/>
+                  <stop offset="100%" stop-color="#38bdf8"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div class="drop-text">
+            <p class="drop-title">Drag & drop images here</p>
+            <p class="drop-sub">or <span class="drop-link" id="browseBtn">browse files</span></p>
+            <p class="drop-hint">PNG · JPG · JPEG · WEBP &nbsp;·&nbsp; Max 5 images &nbsp;·&nbsp; 16 MB each</p>
+          </div>
+        </div>
+        <input type="file" id="fileInput" multiple accept=".png,.jpg,.jpeg,.webp" hidden />
+      </div>
+
+      <!-- Image Previews -->
+      <div class="preview-grid" id="previewGrid"></div>
+
+      <!-- Analyze Button -->
+      <div class="analyze-wrap" id="analyzeWrap" style="display:none">
+        <button class="btn-analyze" id="analyzeBtn">
+          <span class="btn-text">Analyze Images</span>
+          <span class="btn-icon">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M4 10H16M16 10L11 5M16 10L11 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+        </button>
+        <button class="btn-clear" id="clearBtn">Clear All</button>
+      </div>
+    </section>
+
+    <!-- Loading Spinner -->
+    <div class="loading-overlay" id="loadingOverlay" style="display:none">
+      <div class="loader-card">
+        <div class="spinner-ring"></div>
+        <p class="loader-text">Analyzing images<span class="dots"></span></p>
+        <p class="loader-sub" id="loaderSub">Running EfficientNet inference</p>
+      </div>
+    </div>
+
+    <!-- ───── RESULTS SECTION ───── -->
+    <section class="results-section" id="resultsSection" style="display:none">
+
+      <!-- Metrics Cards -->
+      <div class="section-header">
+        <h2 class="section-title">Model Performance Metrics</h2>
+        <span class="section-badge" id="modelBadge">EfficientNet B0</span>
+      </div>
+      <div class="metrics-grid" id="metricsGrid">
+        <div class="metric-card" data-metric="accuracy">
+          <div class="metric-icon accuracy-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 12L11 14L15 10M21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="metric-info">
+            <p class="metric-label">Accuracy</p>
+            <p class="metric-value" id="metricAccuracy">—</p>
+          </div>
+          <div class="metric-arc">
+            <svg class="arc-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#1e293b" stroke-width="6"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="url(#arcAccuracy)" stroke-width="6"
+                      stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"
+                      class="arc-progress" id="arcAccuracy" transform="rotate(-90 40 40)"/>
+              <defs>
+                <linearGradient id="arcAccuracy" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#818cf8"/>
+                  <stop offset="100%" stop-color="#38bdf8"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <div class="metric-card" data-metric="precision">
+          <div class="metric-icon precision-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="metric-info">
+            <p class="metric-label">Precision</p>
+            <p class="metric-value" id="metricPrecision">—</p>
+          </div>
+          <div class="metric-arc">
+            <svg class="arc-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#1e293b" stroke-width="6"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="url(#arcPrecision)" stroke-width="6"
+                      stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"
+                      class="arc-progress" id="arcPrecision" transform="rotate(-90 40 40)"/>
+              <defs>
+                <linearGradient id="arcPrecision" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#f472b6"/>
+                  <stop offset="100%" stop-color="#fb923c"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <div class="metric-card" data-metric="recall">
+          <div class="metric-icon recall-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M22 12H18L15 21L9 3L6 12H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="metric-info">
+            <p class="metric-label">Recall</p>
+            <p class="metric-value" id="metricRecall">—</p>
+          </div>
+          <div class="metric-arc">
+            <svg class="arc-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#1e293b" stroke-width="6"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="url(#arcRecall)" stroke-width="6"
+                      stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"
+                      class="arc-progress" id="arcRecall" transform="rotate(-90 40 40)"/>
+              <defs>
+                <linearGradient id="arcRecall" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#34d399"/>
+                  <stop offset="100%" stop-color="#38bdf8"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <div class="metric-card" data-metric="f1">
+          <div class="metric-icon f1-icon">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <div class="metric-info">
+            <p class="metric-label">F1 Score</p>
+            <p class="metric-value" id="metricF1">—</p>
+          </div>
+          <div class="metric-arc">
+            <svg class="arc-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="#1e293b" stroke-width="6"/>
+              <circle cx="40" cy="40" r="30" fill="none" stroke="url(#arcF1)" stroke-width="6"
+                      stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"
+                      class="arc-progress" id="arcF1" transform="rotate(-90 40 40)"/>
+              <defs>
+                <linearGradient id="arcF1" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#a78bfa"/>
+                  <stop offset="100%" stop-color="#f472b6"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Table -->
+      <div class="section-header" style="margin-top:2.5rem">
+        <h2 class="section-title">Prediction Results</h2>
+        <span class="result-count" id="resultCount">0 images</span>
+      </div>
+      <div class="table-wrap">
+        <table class="results-table" id="resultsTable">
+          <thead>
+            <tr>
+              <th>Preview</th>
+              <th>Filename</th>
+              <th>Prediction</th>
+              <th>Confidence</th>
+              <th>REAL %</th>
+              <th>AI GENERATED %</th>
+              <th>AI EDITED %</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="section-header" style="margin-top:2.5rem">
+        <h2 class="section-title">Visual Analysis</h2>
+      </div>
+      <div class="charts-grid">
+        <!-- Grouped Bar Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <p class="chart-title">Class Probability Distribution</p>
+            <p class="chart-sub">Per-image probability breakdown</p>
+          </div>
+          <div class="chart-body">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+        <!-- Confidence Histogram -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <p class="chart-title">Confidence Histogram</p>
+            <p class="chart-sub">Distribution across uploaded images</p>
+          </div>
+          <div class="chart-body">
+            <canvas id="histChart"></canvas>
+          </div>
+        </div>
+        <!-- Donut Chart -->
+        <div class="chart-card chart-card-sm">
+          <div class="chart-header">
+            <p class="chart-title">Class Split</p>
+            <p class="chart-sub">Predicted class ratio</p>
+          </div>
+          <div class="chart-body chart-donut-body">
+            <canvas id="donutChart"></canvas>
+          </div>
+        </div>
+        <!-- Radar Chart -->
+        <div class="chart-card chart-card-sm">
+          <div class="chart-header">
+            <p class="chart-title">Avg. Probability Radar</p>
+            <p class="chart-sub">Mean across all images</p>
+          </div>
+          <div class="chart-body chart-donut-body">
+            <canvas id="radarChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analyze Again -->
+      <div class="analyze-again-wrap">
+        <button class="btn-again" id="analyzeAgainBtn">
+          <svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M4 4V9H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9C5.05 6.63 7.37 5 10 5C13.87 5 17 8.13 17 12C17 15.87 13.87 19 10 19C6.13 19 3 15.87 3 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Analyze New Images
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ───── FOOTER ───── -->
+  <footer class="footer">
+    <p>VisionForge Forensics &nbsp;·&nbsp; Powered by TensorFlow &nbsp;·&nbsp; EfficientNet B0 Transfer Learning</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script>
+/* ──────────────────────────────────────────────────────────────
+   VisionForge — script.js
+   Full dashboard logic: upload, preview, fetch, charts, table
+   ────────────────────────────────────────────────────────────── */
+
+'use strict';
+
+// ── Chart.js global defaults ───────────────────────────────────
+Chart.defaults.color = '#8899bb';
+Chart.defaults.borderColor = 'rgba(99,130,200,0.12)';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+// ── Constants ──────────────────────────────────────────────────
+const MAX_FILES = 5;
+const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+const CLASS_COLORS = {
+  REAL:         { bg: 'rgba(52,211,153,0.75)',  border: '#34d399' },
+  AI_GENERATED: { bg: 'rgba(248,113,113,0.75)', border: '#f87171' },
+  AI_EDITED:    { bg: 'rgba(251,191,36,0.75)',  border: '#fbbf24' },
+};
+const CLASS_LABELS = { REAL: 'REAL', AI_GENERATED: 'AI GENERATED', AI_EDITED: 'AI EDITED' };
+const MODEL_NAMES = {
+  EfficientNet: 'EfficientNet B0',
+  ResNet:       'ResNet 50',
+  Xception:     'Xception',
+  Ensemble:     '⚡ Ensemble',
+};
+
+// ── State ──────────────────────────────────────────────────────
+let selectedFiles = [];
+let barChartInst = null, histChartInst = null, donutChartInst = null, radarChartInst = null;
+
+// ── DOM refs ───────────────────────────────────────────────────
+const dropZone       = document.getElementById('dropZone');
+const fileInput      = document.getElementById('fileInput');
+const browseBtn      = document.getElementById('browseBtn');
+const previewGrid    = document.getElementById('previewGrid');
+const analyzeWrap    = document.getElementById('analyzeWrap');
+const analyzeBtn     = document.getElementById('analyzeBtn');
+const clearBtn       = document.getElementById('clearBtn');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loaderSub      = document.getElementById('loaderSub');
+const uploadSection  = document.getElementById('uploadSection');
+const resultsSection = document.getElementById('resultsSection');
+const resultsBody    = document.getElementById('resultsBody');
+const resultCount    = document.getElementById('resultCount');
+const modelSelect    = document.getElementById('modelSelect');
+const modelBadge     = document.getElementById('modelBadge');
+const statusPill     = document.getElementById('statusPill');
+const statusText     = document.getElementById('statusText');
+const analyzeAgainBtn = document.getElementById('analyzeAgainBtn');
+
+// ── Drag & Drop ────────────────────────────────────────────────
+dropZone.addEventListener('click', (e) => {
+  if (e.target === browseBtn || dropZone.contains(e.target)) fileInput.click();
+});
+browseBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  handleFiles(Array.from(e.dataTransfer.files));
+});
+fileInput.addEventListener('change', () => handleFiles(Array.from(fileInput.files)));
+
+// ── File Handling ──────────────────────────────────────────────
+function handleFiles(files) {
+  const valid = files.filter(f => ALLOWED_TYPES.includes(f.type));
+  const remaining = MAX_FILES - selectedFiles.length;
+
+  if (valid.length === 0) { showToast('Only PNG, JPG, JPEG, WEBP allowed.', 'error'); return; }
+  if (remaining <= 0)     { showToast(`Max ${MAX_FILES} images. Clear some first.`, 'warn'); return; }
+
+  const toAdd = valid.slice(0, remaining);
+  if (valid.length > remaining) showToast(`Only ${remaining} more image(s) allowed.`, 'warn');
+
+  toAdd.forEach(file => addFile(file));
+  fileInput.value = '';
+}
+
+function addFile(file) {
+  if (selectedFiles.length >= MAX_FILES) return;
+  selectedFiles.push(file);
+
+  const idx  = selectedFiles.length - 1;
+  const item = document.createElement('div');
+  item.className = 'preview-item';
+  item.dataset.idx = idx;
+
+  const img = document.createElement('img');
+  img.src = URL.createObjectURL(file);
+  img.alt = file.name;
+
+  const name = document.createElement('div');
+  name.className = 'preview-name';
+  name.textContent = file.name;
+
+  const rm = document.createElement('button');
+  rm.className = 'preview-remove';
+  rm.innerHTML = '&times;';
+  rm.title = 'Remove';
+  rm.addEventListener('click', (e) => { e.stopPropagation(); removeFile(idx); });
+
+  item.append(img, rm, name);
+  previewGrid.appendChild(item);
+
+  if (selectedFiles.length > 0) analyzeWrap.style.display = 'flex';
+}
+
+function removeFile(idx) {
+  selectedFiles.splice(idx, 1);
+  rebuildPreviews();
+}
+
+function rebuildPreviews() {
+  previewGrid.innerHTML = '';
+  const tmp = [...selectedFiles];
+  selectedFiles = [];
+  tmp.forEach(f => addFile(f));
+  if (selectedFiles.length === 0) analyzeWrap.style.display = 'none';
+}
+
+clearBtn.addEventListener('click', () => {
+  selectedFiles = [];
+  previewGrid.innerHTML = '';
+  analyzeWrap.style.display = 'none';
+  fileInput.value = '';
+});
+
+// ── Model select sync ──────────────────────────────────────────
+modelSelect.addEventListener('change', () => {
+  // 1. Update the text badge to match the new model
+  modelBadge.textContent = MODEL_NAMES[modelSelect.value] || modelSelect.value;
+
+  // 2. Automatically re-run the analysis IF results are already on the screen
+  if (resultsSection.style.display === 'block' && selectedFiles.length > 0) {
+      runAnalysis();
+  }
+});
+
+// ── Analyze ───────────────────────────────────────────────────
+analyzeBtn.addEventListener('click', () => runAnalysis());
+analyzeAgainBtn.addEventListener('click', () => {
+  resultsSection.style.display = 'none';
+  uploadSection.style.display  = 'block';
+  selectedFiles = [];
+  previewGrid.innerHTML = '';
+  analyzeWrap.style.display = 'none';
+  fileInput.value = '';
+  destroyCharts();
+});
+
+async function runAnalysis() {
+  if (selectedFiles.length === 0) { showToast('Please upload at least one image.', 'warn'); return; }
+
+  setStatus('loading', 'Analyzing…');
+  analyzeBtn.disabled = true;
+  clearBtn.disabled   = true;
+  loadingOverlay.style.display = 'flex';
+  loaderSub.textContent = `Running ${MODEL_NAMES[modelSelect.value] || modelSelect.value} inference…`;
+
+  const formData = new FormData();
+  selectedFiles.forEach(f => formData.append('files', f));
+  formData.append('model', modelSelect.value);
+
+  try {
+    const resp = await fetch('/predict', { method: 'POST', body: formData });
+    const data = await resp.json();
+
+    if (!resp.ok || data.error) {
+      throw new Error(data.error || `Server error ${resp.status}`);
+    }
+
+    loadingOverlay.style.display = 'none';
+    renderResults(data);
+    setStatus('ready', 'Done');
+  } catch (err) {
+    loadingOverlay.style.display = 'none';
+    setStatus('error', 'Error');
+    showToast(err.message || 'Request failed.', 'error');
+    analyzeBtn.disabled = false;
+    clearBtn.disabled   = false;
+  }
+}
+
+// ── Render Results ─────────────────────────────────────────────
+function renderResults(data) {
+  const { results, metrics, model } = data;
+
+  modelBadge.textContent = MODEL_NAMES[model] || model;
+  resultCount.textContent = `${results.length} image${results.length !== 1 ? 's' : ''}`;
+
+  renderMetrics(metrics);
+  renderTable(results);
+  renderCharts(results);
+
+  uploadSection.style.display  = 'none';
+  resultsSection.style.display = 'block';
+  resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Metrics ───────────────────────────────────────────────────
+function renderMetrics(m) {
+  const keys = ['accuracy', 'precision', 'recall', 'f1'];
+  const els  = {
+    accuracy:  { val: document.getElementById('metricAccuracy'),  arc: document.getElementById('arcAccuracy') },
+    precision: { val: document.getElementById('metricPrecision'), arc: document.getElementById('arcPrecision') },
+    recall:    { val: document.getElementById('metricRecall'),    arc: document.getElementById('arcRecall') },
+    f1:        { val: document.getElementById('metricF1'),        arc: document.getElementById('arcF1') },
+  };
+
+  keys.forEach(key => {
+    const pct = (m[key] || 0) * 100;
+    els[key].val.textContent = pct.toFixed(1) + '%';
+    // Circumference = 2π×30 ≈ 188.5
+    const offset = 188.5 - (pct / 100) * 188.5;
+    requestAnimationFrame(() => { els[key].arc.style.strokeDashoffset = offset; });
+  });
+}
+
+// ── Table ─────────────────────────────────────────────────────
+function renderTable(results) {
+  resultsBody.innerHTML = '';
+
+  results.forEach(r => {
+    const tr = document.createElement('tr');
+    const probs = r.all_probabilities || {};
+    const cls   = r.predicted_class || 'ERROR';
+
+    const badgeClass = cls === 'REAL' ? 'badge-real' : cls === 'AI_GENERATED' ? 'badge-gen' : cls === 'AI_EDITED' ? 'badge-edit' : 'badge-err';
+    const confPct    = r.confidence || 0;
+    const confColor  = cls === 'REAL' ? '#34d399' : cls === 'AI_GENERATED' ? '#f87171' : '#fbbf24';
+
+    tr.innerHTML = `
+      <td><img class="table-thumb" src="${r.image_url}" alt="${r.original_name}" loading="lazy" /></td>
+      <td class="filename-cell" title="${r.original_name}">${r.original_name}</td>
+      <td>
+        <span class="badge ${badgeClass}">
+          <span class="badge-dot"></span>
+          ${CLASS_LABELS[cls] || cls}
+        </span>
+      </td>
+      <td>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-bg">
+            <div class="conf-bar-fill" style="width:0%;background:${confColor}" data-target="${confPct}"></div>
+          </div>
+          <span class="conf-val" style="color:${confColor}">${confPct.toFixed(1)}%</span>
+        </div>
+      </td>
+      <td class="prob-cell" style="color:var(--real-color)">${(probs.REAL || 0).toFixed(1)}%</td>
+      <td class="prob-cell" style="color:var(--gen-color)">${(probs.AI_GENERATED || 0).toFixed(1)}%</td>
+      <td class="prob-cell" style="color:var(--edit-color)">${(probs.AI_EDITED || 0).toFixed(1)}%</td>
+    `;
+    resultsBody.appendChild(tr);
+  });
+
+  // Animate confidence bars
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.conf-bar-fill').forEach(bar => {
+      const target = parseFloat(bar.dataset.target) || 0;
+      setTimeout(() => { bar.style.width = target + '%'; }, 100);
+    });
+  });
+}
+
+// ── Charts ────────────────────────────────────────────────────
+function destroyCharts() {
+  [barChartInst, histChartInst, donutChartInst, radarChartInst].forEach(c => c && c.destroy());
+  barChartInst = histChartInst = donutChartInst = radarChartInst = null;
+}
+
+function renderCharts(results) {
+  destroyCharts();
+
+  const labels    = results.map((r, i) => r.original_name.replace(/\.[^/.]+$/, '') || `Img ${i+1}`);
+  const realProbs = results.map(r => (r.all_probabilities?.REAL || 0));
+  const genProbs  = results.map(r => (r.all_probabilities?.AI_GENERATED || 0));
+  const editProbs = results.map(r => (r.all_probabilities?.AI_EDITED || 0));
+  const confs     = results.map(r => r.confidence || 0);
+
+  const chartDefaults = {
+    animation: { duration: 900, easing: 'easeInOutQuart' },
+    plugins: {
+      legend: { labels: { color: '#8899bb', boxWidth: 12, padding: 16, font: { size: 12 } } },
+      tooltip: {
+        backgroundColor: 'rgba(13,21,38,0.95)',
+        titleColor: '#e8eef8', bodyColor: '#8899bb',
+        borderColor: 'rgba(99,130,200,0.25)', borderWidth: 1,
+        padding: 10, cornerRadius: 8,
+      },
+    },
+  };
+
+  // ── Bar Chart ──
+  barChartInst = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'REAL',         data: realProbs, backgroundColor: CLASS_COLORS.REAL.bg,         borderColor: CLASS_COLORS.REAL.border,         borderWidth: 1.5, borderRadius: 4 },
+        { label: 'AI GENERATED', data: genProbs,  backgroundColor: CLASS_COLORS.AI_GENERATED.bg,  borderColor: CLASS_COLORS.AI_GENERATED.border,  borderWidth: 1.5, borderRadius: 4 },
+        { label: 'AI EDITED',    data: editProbs, backgroundColor: CLASS_COLORS.AI_EDITED.bg,     borderColor: CLASS_COLORS.AI_EDITED.border,     borderWidth: 1.5, borderRadius: 4 },
+      ],
+    },
+    options: {
+      ...chartDefaults,
+      responsive: true,
+      scales: {
+        x: { ticks: { color: '#8899bb', font: { size: 11 } }, grid: { color: 'rgba(99,130,200,0.08)' } },
+        y: { beginAtZero: true, max: 100, ticks: { color: '#8899bb', callback: v => v + '%' }, grid: { color: 'rgba(99,130,200,0.08)' } },
+      },
+      plugins: { ...chartDefaults.plugins, tooltip: { ...chartDefaults.plugins.tooltip, callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%` } } },
+    },
+  });
+
+  // ── Histogram ──
+  const bins     = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  const binLabels = bins.slice(0, -1).map((b, i) => `${b}–${bins[i+1]}%`);
+  const binCounts = new Array(bins.length - 1).fill(0);
+  confs.forEach(c => {
+    const idx = Math.min(Math.floor(c / 10), binCounts.length - 1);
+    binCounts[idx]++;
+  });
+
+  histChartInst = new Chart(document.getElementById('histChart'), {
+    type: 'bar',
+    data: {
+      labels: binLabels,
+      datasets: [{
+        label: 'Images',
+        data: binCounts,
+        backgroundColor: 'rgba(129,140,248,0.6)',
+        borderColor: '#818cf8',
+        borderWidth: 1.5,
+        borderRadius: 4,
+        borderSkipped: false,
+      }],
+    },
+    options: {
+      ...chartDefaults,
+      responsive: true,
+      scales: {
+        x: { ticks: { color: '#8899bb', font: { size: 10 } }, grid: { color: 'rgba(99,130,200,0.08)' } },
+        y: { beginAtZero: true, ticks: { color: '#8899bb', stepSize: 1 }, grid: { color: 'rgba(99,130,200,0.08)' } },
+      },
+      plugins: { ...chartDefaults.plugins, legend: { display: false } },
+    },
+  });
+
+  // ── Donut Chart ──
+  const classCounts = { REAL: 0, AI_GENERATED: 0, AI_EDITED: 0 };
+  results.forEach(r => { if (classCounts[r.predicted_class] !== undefined) classCounts[r.predicted_class]++; });
+
+  donutChartInst = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['REAL', 'AI GENERATED', 'AI EDITED'],
+      datasets: [{
+        data: [classCounts.REAL, classCounts.AI_GENERATED, classCounts.AI_EDITED],
+        backgroundColor: [CLASS_COLORS.REAL.bg, CLASS_COLORS.AI_GENERATED.bg, CLASS_COLORS.AI_EDITED.bg],
+        borderColor: [CLASS_COLORS.REAL.border, CLASS_COLORS.AI_GENERATED.border, CLASS_COLORS.AI_EDITED.border],
+        borderWidth: 2,
+        hoverOffset: 8,
+      }],
+    },
+    options: {
+      ...chartDefaults,
+      cutout: '68%',
+      plugins: {
+        ...chartDefaults.plugins,
+        legend: { position: 'bottom', labels: { ...chartDefaults.plugins.legend.labels, padding: 14, boxWidth: 10 } },
+        tooltip: { ...chartDefaults.plugins.tooltip, callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} image${ctx.parsed !== 1 ? 's' : ''}` } },
+      },
+    },
+  });
+
+  // ── Radar Chart ──
+  const n    = results.length || 1;
+  const avgR = realProbs.reduce((a, b) => a + b, 0) / n;
+  const avgG = genProbs.reduce((a, b)  => a + b, 0) / n;
+  const avgE = editProbs.reduce((a, b) => a + b, 0) / n;
+
+  radarChartInst = new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: ['REAL', 'AI GENERATED', 'AI EDITED'],
+      datasets: [{
+        label: 'Avg Probability',
+        data: [avgR, avgG, avgE],
+        backgroundColor: 'rgba(129,140,248,0.2)',
+        borderColor: '#818cf8',
+        pointBackgroundColor: '#818cf8',
+        pointBorderColor: '#fff',
+        pointHoverRadius: 6,
+        borderWidth: 2,
+      }],
+    },
+    options: {
+      ...chartDefaults,
+      scales: {
+        r: {
+          beginAtZero: true, max: 100,
+          ticks: { color: '#8899bb', backdropColor: 'transparent', stepSize: 25, font: { size: 10 } },
+          grid: { color: 'rgba(99,130,200,0.15)' },
+          pointLabels: { color: '#8899bb', font: { size: 11, weight: '600' } },
+          angleLines: { color: 'rgba(99,130,200,0.15)' },
+        },
+      },
+      plugins: {
+        ...chartDefaults.plugins,
+        legend: { display: false },
+        tooltip: { ...chartDefaults.plugins.tooltip, callbacks: { label: ctx => ` ${ctx.parsed.r.toFixed(1)}%` } },
+      },
+    },
+  });
+}
+
+// ── Status helpers ─────────────────────────────────────────────
+function setStatus(state, text) {
+  statusPill.className = 'status-pill';
+  if (state !== 'ready') statusPill.classList.add(state);
+  statusText.textContent = text;
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type = 'info') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  const colors = { error: '#f87171', warn: '#fbbf24', info: '#38bdf8' };
+  toast.style.cssText = `
+    position:fixed; bottom:2rem; right:2rem; z-index:9999;
+    background:#111d35; border:1px solid ${colors[type] || colors.info};
+    color:#e8eef8; padding:12px 20px; border-radius:12px;
+    font-family:'DM Sans',sans-serif; font-size:0.875rem;
+    box-shadow:0 8px 32px rgba(0,0,20,0.5);
+    animation:slideUp 0.3s ease;
+    max-width:360px;
+  `;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+modelBadge.textContent = MODEL_NAMES[modelSelect.value] || modelSelect.value;
+
+  </script>
+</body>
+</html>

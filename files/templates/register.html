@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Registration</title>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
+    body {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #00323c 50%, #00252c 50%);
+    }
+    .register-container { width: 380px; text-align: center; }
+    h2 { color: white; margin-bottom: 30px; }
+
+    .input-group { position: relative; margin-bottom: 20px; }
+    .input-group input {
+      width: 100%; padding: 15px 50px;
+      border-radius: 30px; border: none;
+      background: rgba(255,255,255,0.1); color: white;
+    }
+
+    .icon-left {
+      position: absolute; top: 50%; left: 5px;
+      transform: translateY(-50%);
+      width: 40px; height: 40px;
+      background: white; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .register-btn {
+      width: 100%; padding: 15px;
+      border-radius: 30px; border: none;
+      background: white; font-weight: bold;
+    }
+
+    .flash { color: #ff7070; margin-bottom: 10px; }
+    p { color: white; }
+    a { color: white; font-weight: bold; text-decoration: none; }
+  </style>
+</head>
+
+<body>
+<div class="register-container">
+  <h2>USER REGISTRATION</h2>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="flash">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form action="/register" method="POST">
+    <div class="input-group">
+      <div class="icon-left">👤</div>
+      <input type="text" name="name" placeholder="Full Name" required>
+    </div>
+
+    <div class="input-group">
+      <div class="icon-left">📧</div>
+      <input type="email" name="email" placeholder="Email" required>
+    </div>
+
+    <div class="input-group">
+      <div class="icon-left">👤</div>
+      <input type="text" name="username" placeholder="Username" required>
+    </div>
+
+    <div class="input-group">
+      <div class="icon-left">🔒</div>
+      <input type="password" name="password"
+             placeholder="Password (8+, A-Z, a-z, 0-9, symbol)" required>
+    </div>
+
+    <button class="register-btn">REGISTER</button>
+  </form>
+
+  <p>Already have an account? <a href="/login">Login</a></p>
+</div>
+</body>
+</html>

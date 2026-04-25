@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Login</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
+    body {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #00323c 50%, #00252c 50%);
+    }
+    .login-container { width: 350px; text-align: center; }
+    h2 { color: white; margin-bottom: 30px; font-size: 22px; letter-spacing: 1px; }
+
+    .input-group { position: relative; margin-bottom: 20px; }
+    .input-group input {
+      width: 100%; padding: 15px 50px; border: none; border-radius: 30px;
+      background-color: rgba(255,255,255,0.1); color: white; outline: none;
+    }
+    .input-group input::placeholder { color: rgba(255,255,255,0.7); }
+
+    .icon-left, .icon-right {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 40px; height: 40px; background: white; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon-left { left: 5px; }
+    .icon-right { right: 5px; }
+
+    .login-btn {
+      width: 100%; padding: 15px; border: none; border-radius: 30px;
+      background: white; font-weight: bold; cursor: pointer;
+    }
+
+    .flash { color: #ff7070; margin-bottom: 10px; font-size: 14px; }
+    a { color: #00e6e6; text-decoration: none; }
+  </style>
+</head>
+
+<body>
+<div class="login-container">
+  <h2>USER LOGIN</h2>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="flash">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form action="/login" method="POST">
+    <div class="input-group">
+      <div class="icon-left">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="7" r="4"/>
+          <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
+        </svg>
+      </div>
+      <input type="text" name="username" placeholder="Username" required>
+    </div>
+
+    <div class="input-group">
+      <input type="password" name="password" placeholder="Password" required>
+      <div class="icon-right">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="11" width="18" height="11" rx="2"/>
+        </svg>
+      </div>
+    </div>
+
+    <button class="login-btn">LOGIN</button>
+  </form>
+
+  <br>
+  <a href="/register">New user? Register here</a>
+</div>
+</body>
+</html>

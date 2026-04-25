@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}DeepShield - About{% endblock %}
+
+{% block extra_head %}
+<style>
+  .about-container { text-align: left; }
+  .about-container h2 { color: #00e6e6; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
+  .about-container p { line-height: 1.8; margin-bottom: 15px; color: rgba(255,255,255,0.85); font-size: 16px; }
+
+  /* Interactive Tabs */
+  .tabs { display: flex; gap: 10px; margin: 25px 0 15px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+  .tab-btn { background: transparent; color: rgba(255,255,255,0.6); border: none; font-size: 16px; font-weight: bold; cursor: pointer; padding: 10px 15px; border-radius: 8px; transition: all 0.3s; }
+  .tab-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+  .tab-btn.active { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+
+  .tab-content { display: none; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e; animation: fadeInRight 0.4s ease; }
+  .tab-content.active { display: block; }
+
+  /* Tech Stack Tags */
+  .tech-stack { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+  .tag { background: rgba(255,255,255,0.05); padding: 8px 18px; border-radius: 20px; font-size: 14px; border: 1px solid rgba(255,255,255,0.1); cursor: default; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .tag:hover { transform: scale(1.1) translateY(-3px); background: #00e6e6; color: #0f172a; font-weight: bold; border-color: #00e6e6; }
+
+  @keyframes fadeInRight { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="glass about-container">
+  <h2>The Technology Behind DeepShield</h2>
+  <p>DeepShield is an advanced computer vision project designed to tackle the growing issue of synthetic media and deepfakes. By leveraging Convolutional Neural Networks (CNNs), the system identifies subtle artifacts and inconsistencies left behind by AI image generators and editing software.</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(event, 'efficientnet')">EfficientNet</button>
+    <button class="tab-btn" onclick="switchTab(event, 'resnet')">ResNet</button>
+    <button class="tab-btn" onclick="switchTab(event, 'xception')">Xception</button>
+  </div>
+
+  <div id="efficientnet" class="tab-content active">
+    <p><b>EfficientNet</b> is highly optimized for speed while maintaining state-of-the-art accuracy through compound scaling. It uniformly scales network width, depth, and resolution for maximum performance.</p>
+  </div>
+  <div id="resnet" class="tab-content">
+    <p><b>ResNet (Residual Networks)</b> utilizes skip connections or shortcuts to jump over some layers. This allows for significantly deeper networks without suffering from the vanishing gradient problem.</p>
+  </div>
+  <div id="xception" class="tab-content">
+    <p><b>Xception</b> relies on depthwise separable convolutions. It maps spatial correlations for each output channel separately, making it an incredibly efficient feature extractor.</p>
+  </div>
+
+  <h3 style="color: #00e6e6; margin-top: 30px; margin-bottom: 10px;">Training Data</h3>
+  <p>To ensure robust performance, the models were rigorously trained and evaluated using a carefully balanced subset derived from the comprehensive <b>Celeb-DF v1</b> dataset, passing through a heavily augmented training pipeline.</p>
+
+  <h3 style="color: #00e6e6; margin-top: 30px; margin-bottom: 10px;">Built With</h3>
+  <div class="tech-stack">
+    <span class="tag">Python</span>
+    <span class="tag">Flask</span>
+    <span class="tag">TensorFlow</span>
+    <span class="tag">Keras</span>
+    <span class="tag">SQLite</span>
+    <span class="tag">Chart.js</span>
+  </div>
+</div>
+
+<script>
+  function switchTab(evt, tabId) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    evt.currentTarget.classList.add('active');
+  }
+</script>
+{% endblock %}
