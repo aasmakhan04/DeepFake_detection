@@ -1,0 +1,7 @@
+*.pth
+*.h5
+*.zip
+dataset/
+data/
+__pycache__/
+venv/
