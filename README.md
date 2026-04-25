@@ -36,12 +36,12 @@ The core of this project relies on Convolutional Neural Networks (CNNs). I train
 
 **Step 1: Clone the repository**
 Bash
-git clone [https://github.com/YourUsername/deepfake_detection.git]
+git clone https://github.com/YourUsername/deepfake_detection.git
 
 **Step 2: Set up a virtual environment**
 Bash
 python -m venv venv
-# Activate on Windows:
+Activate on Windows:
 venv\Scripts\activate
 
 **Step 3: Install the required libraries**
@@ -54,7 +54,7 @@ Place your trained efficientnet_model.h5, resnet_model.h5, and xception_model.h5
 **Step 5: Start the server**
 Bash
 python app.py
-Finally, open your web browser and go to http://127.0.0.1:5000 to view the dashboard!
+Finally, open your web browser and go to http://127.0.0.0.1 to view the dashboard!
 
 ## 📁 Project Structure
 app.py - The main Python backend server.
@@ -65,4 +65,4 @@ templates/ - Contains the HTML files (index.html, login.html, etc.).
 
 static/uploads/ - Temporary folder where uploaded images are saved for analysis.
 
-Created by Aasma Khan
+###Created by Aasma Khan
